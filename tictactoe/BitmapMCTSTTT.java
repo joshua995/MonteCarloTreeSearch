@@ -46,8 +46,7 @@ class MCTSNode extends BitmapMCTSTTT {
 
         int playerToMove = getCurrentPlayer(state);
 
-        int newState = state |
-                (1 << (action + (playerToMove == 1 ? 0 : OFFSET)));
+        int newState = makeMove(state, playerToMove == 1, action);
         MCTSNode child = new MCTSNode(newState, this, action, playerToMove == 1);
         this.children[this.childCount++] = child;
         return child;
@@ -95,7 +94,7 @@ class MCTSNode extends BitmapMCTSTTT {
                 move = Integer.numberOfTrailingZeros(moves);
                 moves &= moves - 1;
             } while (target-- > 0);
-            nState |= 1 << (player == 1 ? move : move + OFFSET);
+            nState = makeMove(nState, player == 1, move);
             player = 3 - player;
         }
     }
@@ -189,7 +188,7 @@ public class BitmapMCTSTTT {
                     // // System.out.printf("Random move: %d,%d\n", move[0], move[1]);
                 }
 
-                board |= 1 << (isPlayerOne ? move : move + OFFSET); // Make a move
+                board = makeMove(board, isPlayerOne, move);
 
                 int winner = checkWinner(board);
                 if (winner != 0) {
@@ -259,5 +258,9 @@ public class BitmapMCTSTTT {
         return (Integer.bitCount((state | (state >>> OFFSET)) & BOARD_MASK) & 1) == 0
                 ? 1
                 : 2;
+    }
+
+    static int makeMove(int state, boolean whichPlayer, int move) {
+        return state | 1 << (whichPlayer ? move : move + OFFSET);
     }
 }

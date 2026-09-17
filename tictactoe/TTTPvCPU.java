@@ -3,7 +3,7 @@ package tictactoe;
 Joshua Liu
 Bitmap Tic Tac Toe with MCTS
 2026-Sep-17
-CPU vs CPU
+P vs CPU
 */
 
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ class MCTSNode extends TTTPvCPU {
 
     boolean isTerminal() {
         return checkWinner(state) != 0
-                || ((state | (state >>> OFFSET)) & BOARD_MASK) == BOARD_MASK;
+                || ((state | (state >>> OFFSET)) & BOARD_MASK) == BOARD_MASK; // Ensure there are legal moves available
     }
 
     boolean isFullyExpanded() {
@@ -47,8 +47,7 @@ class MCTSNode extends TTTPvCPU {
 
         int playerToMove = getCurrentPlayer(state);
 
-        int newState = state |
-                (1 << (action + (playerToMove == 1 ? 0 : OFFSET)));
+        int newState = state | (1 << (playerToMove == 1 ? action : action + OFFSET));
         MCTSNode child = new MCTSNode(newState, this, action, playerToMove == 1);
         this.children[this.childCount++] = child;
         return child;

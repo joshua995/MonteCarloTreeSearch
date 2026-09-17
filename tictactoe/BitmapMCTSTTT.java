@@ -1,7 +1,9 @@
+package tictactoe;
 /*
 Joshua Liu
 Bitmap Tic Tac Toe with MCTS
 2026-Sep-17
+CPU vs CPU
 */
 
 import java.util.ArrayList;

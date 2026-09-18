@@ -26,7 +26,7 @@ class MCTSNode extends BitmapMCTSTTT {
         this.parent = parent;
         this.action = action;
         this.isPlayerOne = isPlayerOne;
-        this.untriedActions = (~(state | (state >>> OFFSET))) & BOARD_MASK;
+        this.untriedActions = (~(state | (state >>> OFFSET))) & BOARD_MASK; // state 0x0 becomes state 0x1FF
     }
 
     boolean isTerminal() {
@@ -81,19 +81,21 @@ class MCTSNode extends BitmapMCTSTTT {
             if (winner != 0) {
                 return winner;
             }
-            int occupied = (nState | (nState >>> OFFSET)) & BOARD_MASK;
-            int empty = (~occupied) & BOARD_MASK;
-            if (empty == 0) {
+            int occupied = (nState | (nState >>> OFFSET)) & BOARD_MASK; // merge both players moves
+            int empty = (~occupied) & BOARD_MASK; // get empty spots as bit 1
+            if (empty == 0) { // if no bit 1, then board is filled
                 return 0;
-            } // Count available moves
+            }
+            // Count available moves
             int moves = empty;
-            int target = rand.nextInt(Integer.bitCount(empty));
+            int amountAvailableMoves = rand.nextInt(Integer.bitCount(empty)); //
             int move;
 
             do {
                 move = Integer.numberOfTrailingZeros(moves);
-                moves &= moves - 1;
-            } while (target-- > 0);
+                moves &= moves - 1; // Store available move square 0-indexed
+
+            } while (amountAvailableMoves-- > 0);
             nState = makeMove(nState, player == 1, move);
             player = 3 - player;
         }
@@ -113,7 +115,7 @@ class MCTSNode extends BitmapMCTSTTT {
         for (int i = 0; i < iterations; i++) {
             MCTSNode node = root;
             while (!node.isTerminal() && node.isFullyExpanded()) {
-                node = node.bestChild(2 * 1.4);
+                node = node.bestChild(2 * 1.4); // Constant scaled to range (-1,1)
             }
             if (!node.isTerminal() && !node.isFullyExpanded()) {
                 node = node.expand();

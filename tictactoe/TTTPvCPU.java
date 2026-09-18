@@ -204,9 +204,9 @@ public class TTTPvCPU {
                 System.out.print(i + 1);
 
             if (i % 3 != 2)
-                System.out.print(" | ");
+                System.out.print("|");
             else if (i != 8)
-                System.out.print("\n--+---+--\n");
+                System.out.print("\n-+-+-\n");
         }
 
         System.out.println("\n");

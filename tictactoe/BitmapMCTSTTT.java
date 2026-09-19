@@ -154,23 +154,16 @@ public class BitmapMCTSTTT {
             0b100010001, // 0 4 8
             0b001010100 // 2 4 6
     };
-    static List<Integer> winnerList = new ArrayList<>();
+    static int[] winCounter = new int[2];
     static final Random rand = new Random();
+    static final int GAMES = 10000;
 
     public static void main(String[] args) {
-        for (int rounds = 0; rounds < 10000; rounds++) {
+        for (int rounds = 0; rounds < GAMES; rounds++) {
             if (rounds % 1000 == 0) {
-                long player1Wins = winnerList.stream()
-                        .filter(w -> w == 1)
-                        .count();
-
-                long player2Wins = winnerList.stream()
-                        .filter(w -> w == 2)
-                        .count();
-
-                System.out.println("P1 wins: " + player1Wins);
-                System.out.println("P2 wins: " + player2Wins);
-                System.out.println("Draws: " + (rounds - winnerList.size()));
+                System.out.println("P1 wins: " + winCounter[0]);
+                System.out.println("P2 wins: " + winCounter[1]);
+                System.out.println("Draws: " + (rounds - (winCounter[0] + winCounter[1])));
             }
             for (int turn = 0; turn < 9; turn++) {
                 // for (int[] row : board) {
@@ -199,7 +192,7 @@ public class BitmapMCTSTTT {
                     // }
                     // System.out.println();
                     // System.out.printf("Winner %d\n", winner);
-                    winnerList.add(winner);
+                    winCounter[isPlayerOne ? 0 : 1]++;
                     break;
                 }
                 isPlayerOne = !isPlayerOne;
@@ -209,17 +202,9 @@ public class BitmapMCTSTTT {
             isPlayerOne = true;
             move = -1;
         }
-        long player1Wins = winnerList.stream()
-                .filter(w -> w == 1)
-                .count();
-
-        long player2Wins = winnerList.stream()
-                .filter(w -> w == 2)
-                .count();
-
-        System.out.println("P1 wins: " + player1Wins);
-        System.out.println("P2 wins: " + player2Wins);
-        System.out.println("Draws: " + (10000 - winnerList.size()));
+        System.out.println("P1 wins: " + winCounter[0]);
+        System.out.println("P2 wins: " + winCounter[1]);
+        System.out.println("Draws: " + (GAMES - (winCounter[0] + winCounter[1])));
     }
 
     static int checkWinner(int state) {

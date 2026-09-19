@@ -9,38 +9,18 @@
  */
 
 public class ConnectFour {
-    static long player1Board = 0b000_0010_000_0001_000_0011_000_0011_000_0010_000_0111l;
-    static long player2Board = 0l;
+    static long player1Board = 0b000_0000_000_1000_000_1100_001_0110_000_0001_100_0001L;
+    static long player2Board = 0b0;
 
-    static final long BOARD_MASK = 0x3FFFFFFFFFFl;
+    static final long BOARD_MASK = 0x3FFFFFFFFFFL;
 
     public static void main(String[] args) {
         displayBoard();
-        // System.out.println(
-        // String.format("%7s", Long.toBinaryString((player1Board >> 35) &
-        // 0b1111_111)).replace(" ", "0"));
-        // System.out.println(
-        // String.format("%7s", Long.toBinaryString((player1Board >> 28) &
-        // 0b1111_111)).replace(" ", "0"));
-        // System.out.println(
-        // String.format("%7s", Long.toBinaryString((player1Board >> 21) &
-        // 0b1111_111)).replace(" ", "0"));
-        // System.out.println(
-        // String.format("%7s", Long.toBinaryString((player1Board >> 14) &
-        // 0b1111_111)).replace(" ", "0"));
-        // System.out.println(
-        // String.format("%7s", Long.toBinaryString((player1Board >> 7) &
-        // 0b1111_111)).replace(" ", "0"));
-
-        // System.out.println(
-        // String.format("%7s", Long.toBinaryString((player1Board) &
-        // 0b1111_111)).replace(" ", "0"));
         System.out.println(checkWinner(player1Board));
     }
 
     static void displayBoard() {
         for (int i = 41; i >= 0; i--) {
-
             if ((player1Board & (1L << i)) != 0) {
                 System.out.print("X");
             } else if ((player2Board & (1L << i)) != 0) {
@@ -57,6 +37,14 @@ public class ConnectFour {
 
     static boolean checkWinner(long playerBoard) {
         long temp = playerBoard;
+        long[] rows = {
+                (playerBoard & 0b1111_111),
+                ((playerBoard >> 7) & 0b1111_111),
+                ((playerBoard >> 14) & 0b1111_111),
+                ((playerBoard >> 21) & 0b1111_111),
+                ((playerBoard >> 28) & 0b1111_111),
+                ((playerBoard >> 35) & 0b1111_111),
+        };
 
         // Check horizontal connect 4
         for (int i = 0; i < 6; i++) {
@@ -66,16 +54,17 @@ public class ConnectFour {
                 return true;
             }
 
-            // Check vertical connect 4
             if (i < 3) {
-                if (((playerBoard >>> i * 7) & (playerBoard >>> 7 + (i * 7)) & (playerBoard >>> 14 + (i * 7))
-                        & (playerBoard >>> 21 + (i * 7))) != 0) {
+                // Check vertical and diagonal connect 4
+                if ((((playerBoard >>> i * 7) & (playerBoard >>> 7 + (i * 7)) & (playerBoard >>> 14 + (i * 7))
+                        & (playerBoard >>> 21 + (i * 7))) != 0)
+                        || ((rows[i] & (rows[i + 1] >> 1) & (rows[i + 2] >> 2) & (rows[i + 3] >> 3)) != 0)
+                        || ((rows[i] & (rows[i + 1] << 1) & (rows[i + 2] << 2) & (rows[i + 3] << 3)) != 0)) {
                     return true;
                 }
             }
         }
 
-        // Check vertical connect 4
         return false;
     }
 }

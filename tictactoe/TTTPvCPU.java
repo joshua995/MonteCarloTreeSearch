@@ -188,7 +188,7 @@ public class TTTPvCPU {
             }
             isPlayerOne = !isPlayerOne;
         }
-        System.out.println("DRAW");
+        System.out.println("Game Over");
     }
 
     static void printBoard(int state) {

@@ -1,3 +1,4 @@
+package connect4;
 
 /*Bitmap
  . . . . . . . 41-35
@@ -10,8 +11,9 @@
  */
 
 import java.util.Random;
+import java.util.Scanner;
 
-class MCTSNode extends ConnectFour {
+class MCTSNode extends Connect4PvC {
     private long player1Board;
     private long player2Board;
     private MCTSNode parent;
@@ -142,7 +144,7 @@ class MCTSNode extends ConnectFour {
     }
 }
 
-public class ConnectFour {
+public class Connect4PvC {
     static long player1Board = 0b000_0000_000_0000_000_000_000_0000_000_0000_000_0000L;
     static long player2Board = 0l;
     static int currentPlayer = 1;
@@ -150,76 +152,53 @@ public class ConnectFour {
     static int[] winCounter = new int[2];
 
     static final Random RANDOM = new Random();
-    static final int GAMES = 100000;
+    static final Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
-        // displayBoard();
-        for (int rounds = 0; rounds < GAMES; rounds++) {
-            if (rounds % 1000 == 0) {
-                System.out.println("P1 wins: " + winCounter[0]);
-                System.out.println("P2 wins: " + winCounter[1]);
-                System.out.println("Draws: " + (rounds - (winCounter[0] + winCounter[1])));
-            }
-            player1Board = 0b000_0000_000_0000_000_000_000_0000_000_0000_000_0000L;
-            player2Board = 0l;
-            currentPlayer = 1;
-            move = -1;
-            for (int i = 0; i < 42; i++) {
-                if (currentPlayer == 1) {
-                    move = MCTSNode.mctsSearch(player1Board, player2Board, 500);
-                    player1Board = makeMove(player1Board, player2Board, move, false);
-                } else {
-                    // move = MCTSNode.mctsSearch(player1Board, player2Board, 10000);
-                    // player2Board = makeMove(player2Board, player1Board, move, false);
-                    int[] legalMoves = getLegalMoves(player1Board, player2Board);
-                    if (legalMoves.length == 0) {
-                        return;
+        displayBoard();
+        for (int i = 0; i < 42; i++) {
+            if (currentPlayer == 1) {
+                boolean madeAMove = false;
+                while (!madeAMove) {
+                    System.out.println("Enter your move (1-7)");
+                    Integer input = scanner.nextInt();
+                    System.out.println(input);
+                    for (int k = 0; k < 6; k++) {
+                        move = 7 - input;
+                        // Is empty
+                        // System.out.println((k * 7) + move);
+                        if ((((((player1Board | player2Board) >> k * 7) & 0b1111_111) >> move) & 1l) == 0) {
+                            player1Board |= 1l << ((k * 7) + move);
+                            madeAMove = true;
+                            break;
+                        }
+                        if (i == 5) {
+                            System.out.println("IllegalMove");
+                        }
                     }
-                    player2Board = makeMove(player2Board, player1Board, legalMoves[RANDOM.nextInt(0,
-                            legalMoves.length)], false);
                 }
-                if (checkWinner(player1Board, player2Board) != 0) {
-                    // displayBoard();
-                    winCounter[checkWinner(player1Board, player2Board) - 1]++;
-                    // System.out.println("winner " + checkWinner(player1Board, player2Board));
-                    break;
-                }
-                currentPlayer = 3 - currentPlayer;
-                // int[] legalMoves = getLegalMoves(player1Board, player2Board);
-                // if (legalMoves.length == 0) {
-                // return;
-                // }
-                // player1Board = makeMove(player1Board, legalMoves[RANDOM.nextInt(0,
-                // legalMoves.length)], false);
-                // displayBoard();
-                // System.out.println("1, " + checkWinner(player1Board));
-                // if (checkWinner(player1Board)) {
-                // return;
-                // }
-                // legalMoves = getLegalMoves(player1Board, player2Board);
-                // if (legalMoves.length == 0) {
-                // return;
-                // }
-                // player2Board = makeMove(player2Board, legalMoves[RANDOM.nextInt(0,
-                // legalMoves.length)], false);
-                // displayBoard();
-                // System.out.println("2, " + checkWinner(player2Board));
-                // if (checkWinner(player2Board)) {
-                // return;
-                // }
+            } else {
+                move = MCTSNode.mctsSearch(player1Board, player2Board, 5000);
+                player2Board = makeMove(player2Board, player1Board, move, false);
             }
+            displayBoard();
+            if (checkWinner(player1Board, player2Board) != 0) {
+                // displayBoard();
+                winCounter[checkWinner(player1Board, player2Board) - 1]++;
+                System.out.println("Winner " + checkWinner(player1Board, player2Board));
+                break;
+            }
+            currentPlayer = 3 - currentPlayer;
         }
-        System.out.println("P1 wins: " + winCounter[0]);
-        System.out.println("P2 wins: " + winCounter[1]);
-        System.out.println("Draws: " + (GAMES - (winCounter[0] + winCounter[1])));
+
     }
 
     static void displayBoard() {
         for (int i = 41; i >= 0; i--) {
             if ((player1Board & (1L << i)) != 0) {
-                System.out.print("1 ");
+                System.out.print("X ");
             } else if ((player2Board & (1L << i)) != 0) {
-                System.out.print("2 ");
+                System.out.print("O ");
             } else {
                 System.out.print(". ");
             }

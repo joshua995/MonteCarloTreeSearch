@@ -6,33 +6,101 @@
  . . . . . . . 20-14
  . . . . . . . 13-7 
  . . . . . . . 6-0
+ 1 2 3 4 5 6 7
  */
 
+import java.util.Random;
+
 public class ConnectFour {
-    static long player1Board = 0b000_0000_000_1000_000_1100_001_0110_000_0001_100_0001L;
-    static long player2Board = 0b0;
+    static long player1Board = 0b000_0000_000_0000_000_000_000_0000_000_0000_000_0000L;
+    static long player2Board = 0b0l;
+    static int currentPlayer = 1;
 
     static final long BOARD_MASK = 0x3FFFFFFFFFFL;
+    static final Random RANDOM = new Random();
 
     public static void main(String[] args) {
         displayBoard();
-        System.out.println(checkWinner(player1Board));
+        for (int i = 0; i < 42; i++) {
+            int[] legalMoves = getLegalMoves();
+            if (legalMoves.length == 0) {
+                return;
+            }
+            player1Board = makeMove(player1Board, legalMoves[RANDOM.nextInt(0, legalMoves.length)], false);
+            displayBoard();
+            System.out.println("1, " + checkWinner(player1Board));
+            if (checkWinner(player1Board)) {
+                return;
+            }
+            legalMoves = getLegalMoves();
+            if (legalMoves.length == 0) {
+                return;
+            }
+            player2Board = makeMove(player2Board, legalMoves[RANDOM.nextInt(0, legalMoves.length)], false);
+            displayBoard();
+            System.out.println("2, " + checkWinner(player2Board));
+            if (checkWinner(player2Board)) {
+                return;
+            }
+        }
     }
 
     static void displayBoard() {
         for (int i = 41; i >= 0; i--) {
             if ((player1Board & (1L << i)) != 0) {
-                System.out.print("X");
+                System.out.print("1 ");
             } else if ((player2Board & (1L << i)) != 0) {
-                System.out.print("O");
+                System.out.print("2 ");
             } else {
-                System.out.print(".");
+                System.out.print(". ");
             }
 
             if (i % 7 == 0) {
                 System.out.println();
             }
         }
+        System.out.println("-------------\n1 2 3 4 5 6 7");
+    }
+
+    static int[] getLegalMoves() {
+        long legalMoveBitmap = 0l;
+        // position % 7 = column
+        for (int move = 0; move < 7; move++) {
+            for (int i = 0; i < 6; i++) {
+                // Is empty
+                if ((((((player1Board | player2Board) >> i * 7) & 0b1111_111) >> move) & 1) == 0) {
+                    legalMoveBitmap |= 1l << ((i * 7) + move);
+                    break;
+                }
+            }
+        }
+        int[] legalMoves = new int[Long.bitCount(legalMoveBitmap)];
+        for (int i = 0; i < legalMoves.length; i++) {
+            legalMoves[i] = Long.numberOfTrailingZeros(legalMoveBitmap);
+            legalMoveBitmap &= legalMoveBitmap - 1;
+        }
+        return legalMoves;
+    }
+
+    static long makeMove(long playerBoard, int move, boolean isPlayer) {
+        if (isPlayer) {
+            // 7 - move = index
+            move = 7 - move;
+            for (int i = 0; i < 6; i++) {
+                // Is empty
+                // System.out.println((i * 7) + move);
+                if ((((((player1Board | player2Board) >> i * 7) & 0b1111_111) >> move) & 1) == 0) {
+                    playerBoard |= 1l << ((i * 7) + move);
+                    break;
+                }
+                if (i == 5) {
+                    System.out.println("IllegalMove");
+                }
+            }
+        } else {
+            playerBoard |= 1l << move;
+        }
+        return playerBoard;
     }
 
     static boolean checkWinner(long playerBoard) {
@@ -48,9 +116,8 @@ public class ConnectFour {
 
         // Check horizontal connect 4
         for (int i = 0; i < 6; i++) {
-            temp = temp >> i * 7;
-            long next = temp & ((temp >> Long.numberOfTrailingZeros(temp)) >> 1);
-            if ((next & (next >> 2)) != 0) {
+            long horizontal = playerBoard & (playerBoard >> 1);
+            if ((horizontal & (horizontal >> 2)) != 0) {
                 return true;
             }
 

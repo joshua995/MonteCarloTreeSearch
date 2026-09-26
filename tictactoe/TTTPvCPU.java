@@ -19,6 +19,7 @@ import java.util.Scanner;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 
 class TTTUI extends TTTPvCPU {
     int width = 500;
@@ -28,7 +29,7 @@ class TTTUI extends TTTPvCPU {
     int buttonI = 0;
     volatile int chosenMove = -1;
 
-    JLabel label = new JLabel("Player's Turn");
+    JLabel label = new JLabel("Player's Turn", SwingConstants.CENTER);
 
     public TTTUI(int width, int height) {
         this.width = width;
@@ -270,12 +271,12 @@ public class TTTPvCPU {
             if (winner != 0) {
                 printBoard(board);
                 ui.label.setText(String.format("Winner %s\n", winner == 1 ? "X" : "O"));
-                // System.out.printf("Winner %s\n", winner == 1 ? "X" : "O");
                 break;
             }
             isPlayerOne = !isPlayerOne;
         }
-        System.out.println("Game Over");
+        ui.label.setText("Game Over");
+
     }
 
     static void printBoard(int state) {

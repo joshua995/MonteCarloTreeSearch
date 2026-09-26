@@ -6,10 +6,73 @@ Bitmap Tic Tac Toe with MCTS
 P vs CPU
 */
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+
+class TTTUI extends TTTPvCPU {
+    int width = 500;
+    int height = 500;
+
+    JButton[] buttons = new JButton[9];
+    int buttonI = 0;
+
+    volatile int chosenMove = -1;
+
+    public TTTUI(int width, int height) {
+        this.width = width;
+        this.height = height;
+        JFrame frame = new JFrame();
+        frame.setSize(width, height);
+        frame.setLayout(null);
+        frame.setUndecorated(true);
+        frame.setVisible(true);
+
+        createButtons(frame, 0, 0, width / 3, width / 3);
+        createButtons(frame, width / 3, 0, width / 3, width / 3);
+        createButtons(frame, width / 3 * 2, 0, width / 3, width / 3);
+
+        createButtons(frame, 0, height / 3, width / 3, width / 3);
+        createButtons(frame, width / 3, height / 3, width / 3, width / 3);
+        createButtons(frame, width / 3 * 2, height / 3, width / 3, width / 3);
+
+        createButtons(frame, 0, height / 3 * 2, width / 3, width / 3);
+        createButtons(frame, width / 3, height / 3 * 2, width / 3, width / 3);
+        createButtons(frame, width / 3 * 2, height / 3 * 2, width / 3, width / 3);
+
+    }
+
+    private void createButtons(JFrame frame, int x, int y, int width, int height) {
+        JButton button = new JButton(" ");
+        button.setBounds(x, y, width, height);
+        frame.add(button);
+        System.out.println(buttonI);
+        int temp = buttonI;
+        buttons[buttonI++] = button;
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (button.getText() == " ") {
+                    chosenMove = temp;
+                    button.setText(isPlayerOne ? "X" : "O");
+                    removeButtonListener(temp);
+                } else {
+                    System.out.println("Try again");
+                }
+            }
+        });
+    }
+
+    void removeButtonListener(int buttonI) {
+        buttons[buttonI].removeActionListener(buttons[buttonI].getActionListeners()[0]);
+    }
+}
 
 class MCTSNode extends TTTPvCPU {
     private int state;
@@ -157,22 +220,31 @@ public class TTTPvCPU {
 
     static final Scanner scanner = new Scanner(System.in);
 
+    static TTTUI ui;
+
     public static void main(String[] args) {
+        ui = new TTTUI(500, 500);
 
         for (int turn = 0; turn < 9; turn++) {
             printBoard(board);
 
             if (isPlayerOne) {
+                // Wait for move input from UI
+                while (ui.chosenMove < 0)
+                    ;
+                move = ui.chosenMove;
+                ui.chosenMove = -1;
+
                 // move = MCTSNode.mctsSearch(board, 5000);
-                System.out.println("Enter your move (1-9)");
-                Integer input = scanner.nextInt();
-                System.out.println(input);
-                move = input - 1;
-                while (!availableActions(board).contains(move)) {
-                    System.out.println("Try again (1-9)");
-                    input = scanner.nextInt();
-                    move = input - 1;
-                }
+                // System.out.println("Enter your move (1-9)");
+                // Integer input = scanner.nextInt();
+                // System.out.println(input);
+                // move = input - 1;
+                // while (!availableActions(board).contains(move)) {
+                // System.out.println("Try again (1-9)");
+                // input = scanner.nextInt();
+                // move = input - 1;
+                // }
 
             } else {
                 move = MCTSNode.mctsSearch(board, 5000);
@@ -196,17 +268,21 @@ public class TTTPvCPU {
         int p2 = (state >>> OFFSET) & BOARD_MASK;
 
         for (int i = 0; i < 9; i++) {
-            if ((p1 & (1 << i)) != 0)
-                System.out.print("X");
-            else if ((p2 & (1 << i)) != 0)
-                System.out.print("O");
-            else
-                System.out.print(i + 1);
+            if ((p1 & (1 << i)) != 0) {
 
-            if (i % 3 != 2)
+                System.out.print("X");
+            } else if ((p2 & (1 << i)) != 0) {
+                System.out.print("O");
+                ui.buttons[i].setText("O");
+            } else {
+                System.out.print(i + 1);
+            }
+
+            if (i % 3 != 2) {
                 System.out.print("|");
-            else if (i != 8)
+            } else if (i != 8) {
                 System.out.print("\n-+-+-\n");
+            }
         }
 
         System.out.println("\n");

@@ -6,6 +6,9 @@ Bitmap Tic Tac Toe with MCTS
 P vs CPU
 */
 
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -15,6 +18,7 @@ import java.util.Scanner;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 
 class TTTUI extends TTTPvCPU {
     int width = 500;
@@ -22,17 +26,22 @@ class TTTUI extends TTTPvCPU {
 
     JButton[] buttons = new JButton[9];
     int buttonI = 0;
-
     volatile int chosenMove = -1;
+
+    JLabel label = new JLabel("Player's Turn");
 
     public TTTUI(int width, int height) {
         this.width = width;
         this.height = height;
+
+        Dimension size = Toolkit.getDefaultToolkit().getScreenSize();// Get screen resolution
+        int x = (int) size.getWidth() / 2 - width / 2;
+        int y = (int) size.getHeight() / 2 - height / 2;
+
         JFrame frame = new JFrame();
-        frame.setSize(width, height);
+        frame.setBounds(x, y, width, height + (int) (height * .25));
         frame.setLayout(null);
         frame.setUndecorated(true);
-        frame.setVisible(true);
 
         createButtons(frame, 0, 0, width / 3, width / 3);
         createButtons(frame, width / 3, 0, width / 3, width / 3);
@@ -46,13 +55,18 @@ class TTTUI extends TTTPvCPU {
         createButtons(frame, width / 3, height / 3 * 2, width / 3, width / 3);
         createButtons(frame, width / 3 * 2, height / 3 * 2, width / 3, width / 3);
 
+        label.setFont(new Font("Arial", Font.PLAIN, 50));
+        label.setBounds((int) ((width - (width / 1.5)) / 2), height, (int) (width / 1.5), (int) (height * .2));
+        frame.add(label);
+
+        frame.setVisible(true);
     }
 
     private void createButtons(JFrame frame, int x, int y, int width, int height) {
         JButton button = new JButton(" ");
         button.setBounds(x, y, width, height);
+        button.setFont(new Font("Arial", Font.PLAIN, 100));
         frame.add(button);
-        System.out.println(buttonI);
         int temp = buttonI;
         buttons[buttonI++] = button;
         button.addActionListener(new ActionListener() {
@@ -255,7 +269,8 @@ public class TTTPvCPU {
             int winner = checkWinner(board);
             if (winner != 0) {
                 printBoard(board);
-                System.out.printf("Winner %s\n", winner == 1 ? "X" : "O");
+                ui.label.setText(String.format("Winner %s\n", winner == 1 ? "X" : "O"));
+                // System.out.printf("Winner %s\n", winner == 1 ? "X" : "O");
                 break;
             }
             isPlayerOne = !isPlayerOne;

@@ -6,6 +6,7 @@ Bitmap Tic Tac Toe with MCTS
 P vs CPU
 */
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
@@ -67,6 +68,8 @@ class TTTUI extends TTTPvCPU {
         JButton button = new JButton(" ");
         button.setBounds(x, y, width, height);
         button.setFont(new Font("Arial", Font.PLAIN, 100));
+        button.setBackground(new Color(255, 255, 255));
+        button.setForeground(new Color(0, 0, 0));
         frame.add(button);
         int temp = buttonI;
         buttons[buttonI++] = button;
@@ -85,7 +88,14 @@ class TTTUI extends TTTPvCPU {
     }
 
     void removeButtonListener(int buttonI) {
-        buttons[buttonI].removeActionListener(buttons[buttonI].getActionListeners()[0]);
+        if (buttons[buttonI].getActionListeners().length > 0)
+            buttons[buttonI].removeActionListener(buttons[buttonI].getActionListeners()[0]);
+    }
+
+    void removeAllButtonListeners() {
+        for (int i = 0; i < 9; i++) {
+            removeButtonListener(i);
+        }
     }
 }
 
@@ -241,7 +251,7 @@ public class TTTPvCPU {
         ui = new TTTUI(500, 500);
 
         for (int turn = 0; turn < 9; turn++) {
-            printBoard(board);
+            printBoard(board, false);
 
             if (isPlayerOne) {
                 // Wait for move input from UI
@@ -269,7 +279,8 @@ public class TTTPvCPU {
 
             int winner = checkWinner(board);
             if (winner != 0) {
-                printBoard(board);
+                ui.removeAllButtonListeners();
+                printBoard(board, false);
                 ui.label.setText(String.format("Winner %s\n", winner == 1 ? "X" : "O"));
                 break;
             }
@@ -279,29 +290,34 @@ public class TTTPvCPU {
 
     }
 
-    static void printBoard(int state) {
+    static void printBoard(int state, boolean printToScreen) {
         int p1 = state & BOARD_MASK;
         int p2 = (state >>> OFFSET) & BOARD_MASK;
 
         for (int i = 0; i < 9; i++) {
             if ((p1 & (1 << i)) != 0) {
-
-                System.out.print("X");
+                if (printToScreen)
+                    System.out.print("X");
             } else if ((p2 & (1 << i)) != 0) {
-                System.out.print("O");
+                if (printToScreen)
+                    System.out.print("O");
                 ui.buttons[i].setText("O");
             } else {
-                System.out.print(i + 1);
+                if (printToScreen)
+                    System.out.print(i + 1);
             }
 
             if (i % 3 != 2) {
-                System.out.print("|");
+                if (printToScreen)
+                    System.out.print("|");
             } else if (i != 8) {
-                System.out.print("\n-+-+-\n");
+                if (printToScreen)
+                    System.out.print("\n-+-+-\n");
             }
         }
 
-        System.out.println("\n");
+        if (printToScreen)
+            System.out.println("\n");
     }
 
     static int checkWinner(int state) {

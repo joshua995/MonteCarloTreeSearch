@@ -12,10 +12,12 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -29,6 +31,7 @@ class TTTUI extends TTTPvCPU {
     JButton[] buttons = new JButton[9];
     int buttonI = 0;
     volatile int chosenMove = -1;
+    JFrame frame = new JFrame();
 
     JLabel label = new JLabel("Player's Turn", SwingConstants.CENTER);
 
@@ -40,7 +43,6 @@ class TTTUI extends TTTPvCPU {
         int x = (int) size.getWidth() / 2 - width / 2;
         int y = (int) size.getHeight() / 2 - height / 2;
 
-        JFrame frame = new JFrame();
         frame.setBounds(x, y, width, height + (int) (height * .25));
         frame.setLayout(null);
         frame.setUndecorated(true);
@@ -79,9 +81,12 @@ class TTTUI extends TTTPvCPU {
                 if (button.getText() == " ") {
                     chosenMove = temp;
                     button.setText(isPlayerOne ? "X" : "O");
-                    removeButtonListener(temp);
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(10);
+                    } catch (InterruptedException e1) {
+                    }
                 } else {
-                    System.out.println("Try again");
+                    label.setText("Try again");
                 }
             }
         });
@@ -286,7 +291,14 @@ public class TTTPvCPU {
             }
             isPlayerOne = !isPlayerOne;
         }
-        ui.label.setText("Game Over");
+        if (!ui.label.getText().contains("Winner"))
+            ui.label.setText("Game Over");
+        try {
+            TimeUnit.MILLISECONDS.sleep(1500);
+        } catch (InterruptedException e) {
+
+        }
+        ui.frame.dispatchEvent(new WindowEvent(ui.frame, WindowEvent.WINDOW_CLOSING));
 
     }
 
